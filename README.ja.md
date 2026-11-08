@@ -16,7 +16,7 @@ Windows 11 に付属の「カメラ」アプリは使いにくく、基本的な
 
 Mirror はこうした基本機能を補うために作りました。起動してすぐ使え、ミラーはワンクリックで切り替えられ、背景はぼかしや置き換えができ、写真にも動画にも効果がかかります。
 
-WPF（.NET 9）と Windows 標準の `MediaCapture` / Media Foundation で作られており、Windows 11 の Fluent ダークテーマを使っています。
+WPF（.NET 10）と Windows 標準の `MediaCapture` / Media Foundation で作られており、Windows 11 の Fluent ダークテーマを使っています。
 
 ## 機能
 
@@ -61,13 +61,13 @@ WPF（.NET 9）と Windows 標準の `MediaCapture` / Media Foundation で作ら
 ## 動作環境
 
 - Windows 10 2004（ビルド 19041）以降。Windows 11 を推奨。
-- [.NET 9 デスクトップ ランタイム](https://dotnet.microsoft.com/download/dotnet/9.0)（フレームワーク依存で発行しています）。
+- [.NET 10 デスクトップ ランタイム](https://dotnet.microsoft.com/download/dotnet/10.0)（フレームワーク依存で発行しています）。
 - Windows のプライバシー設定で「デスクトップ アプリにカメラへのアクセスを許可する」をオンにしてください。動画に音声を入れるにはマイクへのアクセスも必要です。
 - 背景効果には DirectX 12 対応のグラフィックスカードがあると快適です。ない場合は CPU で処理し、解像度を下げるぶん負荷が上がります。
 
 ## ビルド
 
-.NET 9 SDK が必要です。
+.NET 10 SDK が必要です。
 
 ```bash
 dotnet build -c Release

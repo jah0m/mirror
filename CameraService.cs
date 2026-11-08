@@ -411,7 +411,8 @@ public sealed class CameraService : IAsyncDisposable
     {
         try
         {
-            await _capture.ClearEffectsAsync(MediaStreamType.VideoRecord);
+            if (recording.Encoder is null)
+                await _capture.ClearEffectsAsync(MediaStreamType.VideoRecord);
         }
         catch (Exception e)
         {
@@ -460,7 +461,10 @@ public sealed class CameraService : IAsyncDisposable
         finally
         {
             await StopMicrophoneAsync(recording);
-            await _capture.ClearEffectsAsync(MediaStreamType.VideoRecord);
+            // Only the camera's own recording path adds a mirror effect; the encoder path never does
+            // (and in demo mode there is no initialised camera to clear).
+            if (recording.Encoder is null)
+                await _capture.ClearEffectsAsync(MediaStreamType.VideoRecord);
             FramesAlreadyMirrored = false;
         }
 

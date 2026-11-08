@@ -16,7 +16,7 @@ Windows 11 自带的“相机”太难用了，连最基本的功能都没有：
 
 Mirror 就是为了补上这些基本功能：打开就能用，镜像一键开关，背景可以模糊或替换，拍照和录像都能带上效果。
 
-技术上基于 WPF（.NET 9）和 Windows 自带的 `MediaCapture` / Media Foundation，界面使用 Win11 Fluent 深色主题。
+技术上基于 WPF（.NET 10）和 Windows 自带的 `MediaCapture` / Media Foundation，界面使用 Win11 Fluent 深色主题。
 
 ## 功能
 
@@ -61,13 +61,13 @@ Mirror 就是为了补上这些基本功能：打开就能用，镜像一键开�
 ## 运行要求
 
 - Windows 10 2004（19041）或更新版本，推荐 Windows 11。
-- 已安装 [.NET 9 桌面运行时](https://dotnet.microsoft.com/download/dotnet/9.0)，程序按依赖框架方式发布。
+- 已安装 [.NET 10 桌面运行时](https://dotnet.microsoft.com/download/dotnet/10.0)，程序按依赖框架方式发布。
 - 系统设置里要允许“让桌面应用访问你的相机”；录音还需要允许麦克风。
 - 背景效果最好有支持 DirectX 12 的显卡。没有时会改用 CPU，分辨率降低、占用升高。
 
 ## 构建
 
-需要 .NET 9 SDK。
+需要 .NET 10 SDK。
 
 ```bash
 dotnet build -c Release

@@ -16,7 +16,7 @@ The Camera app that ships with Windows 11 is frustrating to use and is missing e
 
 Mirror fills in those basics. It opens straight into the camera, mirroring is one click, the background can be blurred or replaced, and the effects apply to both photos and videos.
 
-It is built with WPF (.NET 9) on Windows' own `MediaCapture` and Media Foundation, with the Windows 11 Fluent dark theme.
+It is built with WPF (.NET 10) on Windows' own `MediaCapture` and Media Foundation, with the Windows 11 Fluent dark theme.
 
 ## Features
 
@@ -61,13 +61,13 @@ It is built with WPF (.NET 9) on Windows' own `MediaCapture` and Media Foundatio
 ## Requirements
 
 - Windows 10 2004 (build 19041) or later; Windows 11 recommended.
-- The [.NET 9 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0); the app is published as framework-dependent.
+- The [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0); the app is published as framework-dependent.
 - In Windows privacy settings, "Let desktop apps access your camera" must be on, and microphone access too for sound in videos.
 - Background effects work best with a DirectX 12 graphics card. Without one they fall back to the CPU at a lower resolution and higher load.
 
 ## Building
 
-Requires the .NET 9 SDK.
+Requires the .NET 10 SDK.
 
 ```bash
 dotnet build -c Release
