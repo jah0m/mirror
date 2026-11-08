@@ -1,0 +1,9 @@
+rvm_mobilenetv3.onnx
+  Robust Video Matting (MobileNetV3, fp32), by Shanchuan Lin et al.
+  https://github.com/PeterL1n/RobustVideoMatting (release v1.0.0)
+  License: GPL-3.0
+  Used unmodified. Mirror itself is released under GPL-3.0 (see LICENSE).
+
+Microsoft.ML.OnnxRuntime.DirectML
+  https://github.com/microsoft/onnxruntime
+  License: MIT
