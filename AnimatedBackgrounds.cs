@@ -468,12 +468,13 @@ public sealed class AuroraFrames : IFrameSource
             for (int x = 0; x < Width; x++)
             {
                 double u = x / (double)Width;
-                double wave = Math.Sin(u * 5.0 + t * 0.35) * 0.5
-                              + Math.Sin(u * 11.0 - t * 0.22 + Math.Sin(v * 3.0 + t * 0.15) * 2.0) * 0.25
-                              + Math.Sin((u + v) * 7.0 + t * 0.18) * 0.25;
-                // Brightest band across the upper middle, fading towards the bottom.
-                double band = Math.Exp(-Math.Pow((v - 0.38 - wave * 0.16) * 4.2, 2));
-                double hue = 0.5 + 0.5 * Math.Sin(u * 3.0 + t * 0.12 + wave);
+                // Speeds are chosen so the light visibly drifts within a second or two without flickering.
+                double wave = Math.Sin(u * 5.0 + t * 1.1) * 0.5
+                              + Math.Sin(u * 11.0 - t * 0.8 + Math.Sin(v * 3.0 + t * 0.6) * 2.0) * 0.25
+                              + Math.Sin((u + v) * 7.0 + t * 0.7) * 0.25;
+                // Brightest band across the upper middle, swaying up and down, fading towards the bottom.
+                double band = Math.Exp(-Math.Pow((v - 0.38 - wave * 0.22) * 4.2, 2));
+                double hue = 0.5 + 0.5 * Math.Sin(u * 3.0 - t * 0.45 + wave);
                 (float r, float g, float b) glow = Mix(Palette[2], Palette[3], (float)hue);
                 (float r, float g, float b) sky = Mix(Palette[0], Palette[4], (float)v);
                 (float r, float g, float b) c = Mix(sky, Mix(Palette[1], glow, (float)band), (float)(band * 0.9));
