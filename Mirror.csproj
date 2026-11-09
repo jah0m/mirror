@@ -11,7 +11,7 @@
     <RootNamespace>Mirror</RootNamespace>
     <ApplicationIcon>assets\Mirror.ico</ApplicationIcon>
     <Product>Mirror</Product>
-    <Version>1.0.1</Version>
+    <Version>1.1.0</Version>
     <!-- WPF0001: ThemeMode (Fluent) is marked experimental. -->
     <NoWarn>$(NoWarn);WPF0001</NoWarn>
     <!-- Keeps ONNX Runtime's native library inside the single published exe. -->

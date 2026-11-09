@@ -20,6 +20,10 @@ internal static class MF
     public static readonly Guid Rgb32 = new("00000016-0000-0010-8000-00aa00389b71");              // MFVideoFormat_RGB32
     public static readonly Guid H264 = new("34363248-0000-0010-8000-00aa00389b71");               // MFVideoFormat_H264
     public const uint InterlaceProgressive = 2;                                                   // MFVideoInterlace_Progressive
+    public static readonly Guid EnableVideoProcessing = new("fb394f3d-ccf1-42ee-bbb3-f9b845d5681d"); // MF_SOURCE_READER_ENABLE_VIDEO_PROCESSING
+    public const uint AllStreams = 0xFFFFFFFE;                                                    // MF_SOURCE_READER_ALL_STREAMS
+    public const uint FirstVideoStream = 0xFFFFFFFC;                                              // MF_SOURCE_READER_FIRST_VIDEO_STREAM
+    public const uint EndOfStream = 0x2;                                                          // MF_SOURCE_READERF_ENDOFSTREAM
 
     [DllImport("mfplat.dll")]
     public static extern int MFStartup(uint version, uint flags);
@@ -57,7 +61,9 @@ internal static class MF
 [ComImport, Guid("2cd2d921-c447-44a7-a13c-4adabfc247e3"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 internal interface IMFAttributes
 {
-    void GetItem(); void GetItemType(); void CompareItem(); void Compare(); void GetUINT32(); void GetUINT64();
+    void GetItem(); void GetItemType(); void CompareItem(); void Compare();
+    [PreserveSig] int GetUINT32([MarshalAs(UnmanagedType.LPStruct)] Guid key, out uint value);
+    [PreserveSig] int GetUINT64([MarshalAs(UnmanagedType.LPStruct)] Guid key, out ulong value);
     void GetDouble(); void GetGUID(); void GetStringLength(); void GetString(); void GetAllocatedString();
     void GetBlobSize(); void GetBlob(); void GetAllocatedBlob(); void GetUnknown(); void SetItem();
     void DeleteItem(); void DeleteAllItems();

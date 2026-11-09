@@ -22,7 +22,7 @@ It is built with WPF (.NET 10) on Windows' own `MediaCapture` and Media Foundati
 
 - **Mirror**: one-click toggle, on by default. A setting decides whether photos and videos are saved mirrored too; by default they are saved as you see them.
 - **Photos and video**: photos are saved as JPEG, videos as MP4 (H.264 + AAC).
-- **Background**: none, blur (adjustable strength), six built-in scenes, or your own picture. The effect is applied to both photos and videos.
+- **Background**: none, blur (adjustable strength), six built-in scenes, the animated "Aurora", or your own picture, GIF or video (MP4, MOV, WMV and more). Animated backgrounds loop; videos are used without their sound. The effect is applied to both photos and videos.
 - **Timer**: 3-second or 10-second countdown.
 - **Helpers**: rule-of-thirds grid, full screen.
 - **Picture settings**: switch camera, choose resolution and frame rate, adjust brightness and contrast (when the camera supports it).
@@ -97,6 +97,7 @@ Publishing also leaves `DirectML.pdb`, `DirectML.Debug.pdb` and `onnxruntime.lib
 | `CameraService.cs` | Opening the camera, frames, recording (system or own encoder), microphone |
 | `BackgroundBlur.cs` | Person segmentation (Robust Video Matting), background blur and replacement |
 | `Backgrounds.cs` | Built-in and user backgrounds: list, load, upload, delete |
+| `AnimatedBackgrounds.cs` | Animated backgrounds: video decoding, GIF composition, the drawn "Aurora", and the player thread |
 | `FrameEncoder.cs` | Encodes the processed frames to H.264 MP4 when a background effect is on |
 | `Remuxer.cs` | Losslessly combines the separately recorded video and sound into one MP4 |
 | `MediaFoundation.cs` | Media Foundation interfaces and GUIDs, taken from the Windows SDK headers |

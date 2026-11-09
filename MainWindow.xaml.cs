@@ -26,7 +26,8 @@ public partial class MainWindow : Window
     private List<CameraDevice> _cameras = [];
     private CameraService? _camera;
     private BackgroundBlur? _blur;
-    private readonly Dictionary<string, BackgroundImage> _backgroundImages = [];
+    private readonly Dictionary<string, IReplacementBackground> _stillBackgrounds = [];
+    private (string Key, AnimatedBackground Player)? _animated;
     private readonly Dictionary<string, ImageSource> _thumbnails = [];
     private WriteableBitmap? _bitmap;
     private CancellationTokenSource? _countdown;
@@ -549,13 +550,26 @@ public partial class MainWindow : Window
             }
         }
 
-        BackgroundImage? image = null;
+        IReplacementBackground? replacement = null;
+        bool opened = false;
         if (active && Backgrounds.IsImage(mode))
         {
-            if (!_backgroundImages.TryGetValue(mode, out image))
+            if (_stillBackgrounds.TryGetValue(mode, out var still))
+                replacement = still;
+            else if (_animated is { } playing && playing.Key == mode)
+                replacement = playing.Player;
+            else
             {
-                image = await Task.Run(() => Backgrounds.LoadPixels(mode));
-                if (image is null)
+                try
+                {
+                    replacement = await Task.Run(() => Backgrounds.Open(mode));
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex);
+                }
+                opened = true;
+                if (replacement is null)
                 {
                     ShowToast(Loc.T("BackgroundMissing"));
                     _settings.Background = Backgrounds.None;
@@ -564,17 +578,31 @@ public partial class MainWindow : Window
                     await ApplyBackgroundAsync();
                     return;
                 }
-                _backgroundImages[mode] = image;
+                if (replacement is StillBackground)
+                    _stillBackgrounds[mode] = replacement;
             }
         }
 
         // The choice may have changed while something was loading; the latest call wins.
         if (mode != _settings.Background)
+        {
+            if (opened && replacement is AnimatedBackground orphan)
+                orphan.Dispose();
             return;
+        }
         if (_blur is not null)
-            _blur.Replacement = image;
+            _blur.Replacement = replacement;
         if (_camera is not null)
             _camera.Blur = active ? _blur : null;
+
+        // Only one animation plays at a time; stop the previous one once it is no longer shown.
+        if (_animated is { } previous && !ReferenceEquals(previous.Player, replacement))
+        {
+            previous.Player.Dispose();
+            _animated = null;
+        }
+        if (replacement is AnimatedBackground animation)
+            _animated = (mode, animation);
     }
 
     private async Task SelectBackgroundAsync(string key)
@@ -629,18 +657,42 @@ public partial class MainWindow : Window
                 if (thumb is not null)
                     _thumbnails[choice.Key] = thumb;
             }
-            BackgroundTiles.Children.Add(MakeTile(choice.Key, choice.Name, thumb, null, choice.IsCustom));
+            BackgroundTiles.Children.Add(MakeTile(choice.Key, choice.Name, thumb, null, choice.IsCustom, choice.IsAnimated));
         }
         BackgroundTiles.Children.Add(MakeTile("upload", Loc.T("Upload"), null, ""));
     }
 
-    private FrameworkElement MakeTile(string key, string name, ImageSource? thumb, string? icon, bool deletable = false)
+    private FrameworkElement MakeTile(string key, string name, ImageSource? thumb, string? icon,
+        bool deletable = false, bool animated = false)
     {
         bool selected = key == _settings.Background;
         var content = new Grid();
         if (thumb is not null)
             content.Children.Add(new Image { Source = thumb, Stretch = Stretch.UniformToFill });
-        else
+        if (animated)
+        {
+            // A small "play" mark tells animated backgrounds apart from still ones.
+            content.Children.Add(new Border
+            {
+                Width = 20,
+                Height = 20,
+                Margin = new Thickness(5),
+                CornerRadius = new CornerRadius(10),
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+                Background = new SolidColorBrush(Color.FromArgb(0xC0, 0, 0, 0)),
+                Child = new TextBlock
+                {
+                    Text = "",
+                    FontFamily = (FontFamily)FindResource("Icons"),
+                    FontSize = 9,
+                    Foreground = Brushes.White,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                },
+            });
+        }
+        if (thumb is null)
             content.Children.Add(new TextBlock
             {
                 Text = icon,
@@ -716,6 +768,9 @@ public partial class MainWindow : Window
         delete.Click += async (_, e) =>
         {
             e.Handled = true;
+            // Stop showing it first: a playing video keeps its file open.
+            if (_settings.Background == key)
+                await SelectBackgroundAsync(Backgrounds.None);
             try
             {
                 Backgrounds.DeleteCustom(key);
@@ -726,13 +781,10 @@ public partial class MainWindow : Window
                 return;
             }
             _thumbnails.Remove(key);
-            _backgroundImages.Remove(key);
+            _stillBackgrounds.Remove(key);
             if (_settings.LastBackground == key)
                 _settings.LastBackground = Backgrounds.Blur;
-            if (_settings.Background == key)
-                await SelectBackgroundAsync(Backgrounds.None);
-            else
-                RefreshBackgroundTiles();
+            RefreshBackgroundTiles();
             _settings.Save();
         };
         return new Grid { Children = { tile, delete } };
@@ -760,14 +812,16 @@ public partial class MainWindow : Window
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
             Title = Loc.T("ChooseBackground"),
-            Filter = Loc.T("ImageFilter", "*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.tif;*.tiff;*.webp;*.heic"),
+            Filter = Loc.T("ImageFilter", Backgrounds.UploadPattern),
         };
         if (dialog.ShowDialog(this) != true)
             return;
 
         try
         {
-            string key = Backgrounds.AddCustom(dialog.FileName);
+            // Videos are checked and copied, which can take a moment for large files.
+            string file = dialog.FileName;
+            string key = await Task.Run(() => Backgrounds.AddCustom(file));
             await SelectBackgroundAsync(key);
         }
         catch (Exception ex)

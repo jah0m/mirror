@@ -22,7 +22,7 @@ Mirror 就是为了补上这些基本功能：打开就能用，镜像一键开�
 
 - **镜像**：一键开关，默认开启。可在设置里选择照片和视频是否也按镜像保存，默认保存的就是你看到的样子。
 - **拍照、录像**：照片存为 JPEG，视频存为 H.264 + AAC 的 MP4。
-- **背景**：无、模糊（可调强度）、6 张内置预设，或上传自己的图片。照片和录像都会带上背景效果。
+- **背景**：无、模糊（可调强度）、6 张内置预设、动态预设“流光”，或上传自己的图片、GIF、视频（MP4、MOV、WMV 等）。动态背景会循环播放（视频只取画面，不带声音）。照片和录像都会带上背景效果。
 - **定时**：可设 3 秒或 10 秒倒计时。
 - **辅助**：九宫格、全屏。
 - **画面调节**：切换摄像头、选择分辨率和帧率、调节亮度和对比度（需摄像头支持）。
@@ -96,7 +96,8 @@ Mirror.exe --demo docs/demo-subject.jpg --lang zh --background preset:office
 | `MainWindow.xaml` / `.cs` | 界面、按钮和快捷键、背景选择面板、拍照和录像流程 |
 | `CameraService.cs` | 打开摄像头、取帧、录像（系统录制或自编码两条路径）、麦克风 |
 | `BackgroundBlur.cs` | 人像分割（Robust Video Matting）、背景模糊与背景替换合成 |
-| `Backgrounds.cs` | 预设和用户背景图：列出、加载、上传、删除 |
+| `Backgrounds.cs` | 预设和用户背景：列出、加载、上传、删除 |
+| `AnimatedBackgrounds.cs` | 动态背景：视频解码、GIF 合成、“流光”的绘制，以及独立线程上的播放器 |
 | `FrameEncoder.cs` | 开启背景效果时，把处理后的画面编码成 H.264 MP4 |
 | `Remuxer.cs` | 把单独录的视频和声音无损合成一个 MP4 |
 | `MediaFoundation.cs` | Media Foundation 接口声明和 GUID，取自 Windows SDK 头文件 |

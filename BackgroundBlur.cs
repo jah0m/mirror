@@ -42,16 +42,14 @@ public sealed class BackgroundBlur
     /// <summary>Blur radius in low-resolution pixels.</summary>
     public int Strength { get; set; } = 6;
 
-    /// <summary>When set, this image is shown behind the person instead of the blurred room.</summary>
-    public BackgroundImage? Replacement { get; set; }
+    /// <summary>When set, this picture or animation is shown behind the person instead of the blurred room.</summary>
+    public IReplacementBackground? Replacement { get; set; }
 
     /// <summary>
     /// Flips the replacement horizontally. Set while the preview is mirrored, so the picture reads the
     /// right way round on screen.
     /// </summary>
     public bool FlipReplacement { get; set; }
-
-    private (BackgroundImage Source, bool Flip, int Width, int Height, byte[] Pixels)? _fitted;
 
     /// <summary>True when the model runs on the graphics card.</summary>
     public bool UsesGpu { get; }
@@ -88,54 +86,13 @@ public sealed class BackgroundBlur
 
         UpdateAlpha(source, width, height);
         var replacement = Replacement;
-        if (replacement is null)
+        // An animation that has not produced its first picture yet falls back to the blur.
+        if (replacement is null
+            || !replacement.Use(width, height, FlipReplacement, background => CompositeOver(source, background, width, height, destination)))
         {
             BuildBackground(source, width, height);
             Composite(source, width, height, destination);
         }
-        else
-        {
-            CompositeOver(source, Fit(replacement, FlipReplacement, width, height), width, height, destination);
-        }
-    }
-
-    /// <summary>Scales the replacement to cover the frame, centred and cropped. Cached per size.</summary>
-    private byte[] Fit(BackgroundImage image, bool flip, int width, int height)
-    {
-        if (_fitted is { } f && f.Source == image && f.Flip == flip && f.Width == width && f.Height == height)
-            return f.Pixels;
-
-        var pixels = new byte[width * height * 4];
-        double scale = Math.Max((double)width / image.Width, (double)height / image.Height);
-        double offsetX = (image.Width * scale - width) / 2, offsetY = (image.Height * scale - height) / 2;
-        int iw = image.Width, ih = image.Height;
-        byte[] src = image.Pixels;
-        Parallel.For(0, height, y =>
-        {
-            double sy = Math.Clamp((y + 0.5 + offsetY) / scale - 0.5, 0, ih - 1.001);
-            int y0 = (int)sy;
-            double wy = sy - y0;
-            int y1 = Math.Min(y0 + 1, ih - 1);
-            for (int x = 0; x < width; x++)
-            {
-                int tx = flip ? width - 1 - x : x;
-                double sx = Math.Clamp((tx + 0.5 + offsetX) / scale - 0.5, 0, iw - 1.001);
-                int x0 = (int)sx;
-                double wx = sx - x0;
-                int x1 = Math.Min(x0 + 1, iw - 1);
-                int p = (y * width + x) * 4;
-                for (int c = 0; c < 3; c++)
-                {
-                    double top = src[(y0 * iw + x0) * 4 + c] * (1 - wx) + src[(y0 * iw + x1) * 4 + c] * wx;
-                    double bottom = src[(y1 * iw + x0) * 4 + c] * (1 - wx) + src[(y1 * iw + x1) * 4 + c] * wx;
-                    pixels[p + c] = (byte)(top * (1 - wy) + bottom * wy + 0.5);
-                }
-                pixels[p + 3] = 255;
-            }
-        });
-
-        _fitted = (image, flip, width, height, pixels);
-        return pixels;
     }
 
     private void CompositeOver(byte[] source, byte[] background, int width, int height, byte[] destination)
